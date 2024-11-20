@@ -1,0 +1,177 @@
+class LibrarySystem:
+    def __init__(self):
+        self.books = [
+            {"title": "Hunger Games 1", "author": "Suzanne Collins", "year": "2012", "series": "Hunger Games", "genre": "Dystopian"},
+            {"title": "Hunger Games 2: Catching Fire", "author": "Suzanne Collins", "year": "2014", "series": "Hunger Games", "genre": "Dystopian"},
+            {"title": "Minecraft Story Mode Episode 1", "author": "Mojang", "year": "2011", "series": None, "genre": "Adventure"},
+            {"title": "Batman Book", "author": "DC", "year": "2017", "series": None, "genre": "Superhero"}
+        ]
+        self.genres = ["Action", "Adventure", "Dystopian", "Fantasy", "Mystery", "Romance", "Science Fiction", "Superhero"]
+
+    def get_input(self, prompt):
+        while True:
+            value = input(prompt)
+            if value.lower() == 'back':
+                return None
+            return value
+
+    def add_book(self):
+        print("\nEnter book details (type 'back' to go back to the previous step):")
+
+        while True:
+            title = self.get_input("Enter the title of the book: ")
+            if title is None:
+                print("Cancelled adding the book.\n")
+                return
+
+            author = self.get_input("Enter the author of the book: ")
+            if author is None:
+                print("Going back to title entry.\n")
+                continue
+
+            year = self.get_input("Enter the year of publication: ")
+            if year is None:
+                print("Going back to author entry.\n")
+                continue
+
+            series = input("Is this book part of a series? (yes/no): ").lower()
+            series_name = input("Enter the series name: ") if series == 'yes' else None
+
+            genre = self.select_genre()
+
+            print("\nPlease confirm the book details:")
+            print(f"Title: {title}")
+            print(f"Author: {author}")
+            print(f"Year: {year}")
+            print(f"Series: {series_name or 'None'}")
+            print(f"Genre: {genre}")
+            confirm = input("Is this information correct? (yes/no): ").lower()
+            if confirm == 'yes':
+                book = {"title": title, "author": author, "year": year, "series": series_name, "genre": genre}
+                self.books.append(book)
+                print(f"\nBook '{title}' added successfully!\n")
+                break
+            else:
+                print("Starting again to enter book details.\n")
+
+    def select_genre(self):
+        print("\nAvailable Genres:")
+        for i, genre in enumerate(self.genres, 1):
+            genre_count = sum(1 for book in self.books if book["genre"] == genre)
+            print(f"{i}. {genre} ({genre_count})")
+        print(f"{len(self.genres) + 1}. Add a new genre")
+
+        while True:
+            genre_choice = input("\nSelect a genre by entering the number, or type 'back' to cancel: ")
+            if genre_choice.lower() == 'back':
+                return None
+
+            try:
+                genre_index = int(genre_choice) - 1
+                if genre_index == len(self.genres):
+                    new_genre = input("Enter the name of the new genre: ")
+                    if new_genre and new_genre not in self.genres:
+                        self.genres.append(new_genre)
+                        print(f"New genre '{new_genre}' added.")
+                        return new_genre
+                    else:
+                        print("Genre already exists or invalid name.")
+                elif 0 <= genre_index < len(self.genres):
+                    return self.genres[genre_index]
+            except ValueError:
+                print("Invalid input. Please enter a number corresponding to a genre.")
+
+    def search_book(self):
+        print("\nSearch Options:")
+        print("1. Search by Title")
+        print("2. Search by Author")
+        print("3. Search by Series")
+        print("4. Search by Genre")
+        choice = input("How would you like to search? (Enter number): ")
+
+        if choice == '1':
+            search_title = input("Enter title to search for: ")
+            found_books = [book for book in self.books if search_title.lower() in book["title"].lower()]
+
+        elif choice == '2':
+            search_author = input("Enter author to search for: ")
+            found_books = [book for book in self.books if search_author.lower() in book["author"].lower()]
+
+        elif choice == '3':
+            search_series = input("Enter series name to search for: ")
+            found_books = [book for book in self.books if book["series"] and search_series.lower() in book["series"].lower()]
+
+        elif choice == '4':
+            print("\nGenres Available:")
+            for i, genre in enumerate(self.genres, 1):
+                genre_count = sum(1 for book in self.books if book["genre"] == genre)
+                print(f"{i}. {genre} ({genre_count})")
+            genre_choice = input("\nSelect a genre by entering the number, or type 'back' to return: ")
+
+            if genre_choice.lower() == 'back':
+                return
+
+            try:
+                genre_index = int(genre_choice) - 1
+                selected_genre = self.genres[genre_index]
+                found_books = [book for book in self.books if book["genre"] == selected_genre]
+            except (IndexError, ValueError):
+                print("\nInvalid choice. Returning to main menu.\n")
+                return
+
+        else:
+            print("\nInvalid choice. Returning to main menu.\n")
+            return
+
+        if found_books:
+            print("\nSearch Results:")
+            for i, book in enumerate(found_books, 1):
+                series_info = f", Series: {book['series']}" if book["series"] else ""
+                genre_info = f", Genre: {book['genre']}" if book["genre"] else ""
+                print(f"{i}. Title: {book['title']}, Author: {book['author']}, Year: {book['year']}{series_info}{genre_info}")
+        else:
+            print("\nNo books found matching the search criteria.\n")
+
+    def display_books(self):
+        if not self.books:
+            print("\nNo books in the library.\n")
+            return
+
+        print("\nAll Books in Library:")
+        for i, book in enumerate(self.books, 1):
+            series_info = f", Series: {book['series']}" if book["series"] else ""
+            genre_info = f", Genre: {book['genre']}" if book["genre"] else ""
+            print(f"{i}. Title: {book['title']}, Author: {book['author']}, Year: {book['year']}{series_info}{genre_info}")
+
+    def main_menu(self):
+        while True:
+            print("\nLibrary Management System")
+            print("1. Add a Book")
+            print("2. Remove a Book")
+            print("3. Update Book Information")
+            print("4. Search for a Book")
+            print("5. Display All Books")
+            print("6. Exit")
+
+            choice = input("Please select an option (1-6): ")
+            if choice == '1':
+                self.add_book()
+            elif choice == '2':
+                self.remove_book()
+            elif choice == '3':
+                self.update_book()
+            elif choice == '4':
+                self.search_book()
+            elif choice == '5':
+                self.display_books()
+            elif choice == '6':
+                print("Exiting the system. Goodbye!")
+                break
+            else:
+                print("\nInvalid choice. Please try again.\n")
+
+
+# Run the Library Management System
+if __name__ == "__main__":
+    library_system = LibrarySystem()
+    library_system.main_menu()
